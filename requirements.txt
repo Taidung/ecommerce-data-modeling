@@ -1,0 +1,10 @@
+duckdb
+dagster
+dagster-webserver
+dagster-dg-cli
+dbt
+dlt
+dlt[duckdb,sql-database]>=1.31.0
+dagster-dbt 
+dagster-dlt 
+pymssql
