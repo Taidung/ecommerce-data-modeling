@@ -1,0 +1,45 @@
+==================== 2026-10-18T02:21:58.926189Z | 01a14cd0-dcf3-7b52-8540-364359e07509 ====================
+02:21:58.934703 [info ]: Installing dbt project and profile setup
+02:21:59.073740 [info ]: Info Created .vscode/extensions.json with dbt extension recommendation
+02:21:59.078187 [info ]: Success Project created successfully!
+02:21:59.078587 [info ]: Info Project name: dbt_model
+02:21:59.078630 [info ]: Info Project directory: dbt_model
+02:22:04.785827 [info ]: Info Skipping profile setup.
+02:22:04.788073 [info ]: Validating profile inputs, adapters, and connection
+
+02:22:04.789274 [info ]: dbt 2.0.8
+02:22:04.797047 [info ]: Started loading project
+02:22:04.860912 [info ]: Loading ~/.dbt/profiles.yml
+02:22:04.895375 [info ]: Finished loading project [  0.10s]
+02:22:04.901576 [info ]: Started debugging
+02:22:04.903123 [info ]: Debugging profile: dev
+02:22:04.903174 [info ]: Debugging dbt version: 2.0.8
+02:22:04.903691 [info ]: Debugging platform: linux x86_64 (unix)
+02:22:04.906125 [info ]: Debugging adapter type: snowflake (remote)
+02:22:04.908686 [info ]: Debugging dependencies:
+  git: OK
+02:22:04.917787 [info ]: Debugging connection:
+  "account": "PUHJBRQ-OK47831",
+  "user": "dbt",
+  "database": "analytics",
+  "warehouse": "ecom_wh",
+  "schema": "e_commerce",
+  "role": "transformation"
+02:22:04.940257 [debug]: Snowflake driver resolved: snowflake 0.21.0.dev+dbt0.21.18
+02:22:05.665504 [debug]: borrow_tlocal_connection() took 734.199077ms
+02:22:05.683327 [debug]: create_debug_span(...).entered() took 2.200482ms
+02:22:05.872790 [debug]: stmt.execute() (submit+wait_for_completion, returns reader) took 189.275854ms
+02:22:05.872840 [debug]: reader.schema() took 631ns
+02:22:05.875391 [debug]: do_execute(conn) (closure: stmt.execute + schema + batch loop) took 192.017555ms
+02:22:05.882145 [debug]: concat_batches + normalize_result_column_names took 6.715218ms
+02:22:05.884677 [debug]: record_current_span_status_from_attrs took 2.500745ms
+02:22:05.885286 [debug]: Query executed on node unknown:
+select 1 as id
+02:22:05.885850 [debug]: drop(query_span_guard) (span exit/export) took 1.147291ms
+02:22:05.895244 [debug]: adapter.execute() (full call, incl. adbc_execute_with_options) took 229.634912ms
+02:22:05.895564 [info ]: Debugging connection test: OK
+02:22:05.898279 [info ]: Debugged All checks passed!
+02:22:05.898648 [info ]: Finished debugging [  1.00s]
+02:22:06.235094 [info ]: 
+==================== Execution Summary =====================
+Finished 'init' successfully for target 'dev' [7.3s]

@@ -1,0 +1,22 @@
+name: dbt_model
+
+profile: dbt_model
+
+seed-paths: ["seeds"]
+model-paths: ["models"]
+macro-paths: ["macros"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dbt_model:
+    staging:
+      +materialized: view
+      +schema: staging
+    warehouse:
+      +materialized: table
+      +schema: warehouse
+    marts:
+      +materialized: table
+      +schema: marts

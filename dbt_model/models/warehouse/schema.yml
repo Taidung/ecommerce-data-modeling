@@ -1,0 +1,92 @@
+models:
+  - name: dim_customer
+    description: "Customer dimension table"
+    columns:
+      - name: customer_id
+        description: "Unique identifier for each customer"
+        tests:
+          - not_null
+          - unique
+      - name: customer_key
+        description: "Surrogate key for customer dimension"
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_product
+    description: "Product dimension table"
+    columns:
+      - name: product_id
+        description: "Unique identifier for each product"
+        tests:
+          - not_null
+          - unique
+      - name: product_key
+        description: "Surrogate key for product dimension"
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_region
+    description: "Region dimension table"
+    columns:
+      - name: region_id
+        description: "Unique identifier for each region"
+        tests:
+          - not_null
+          - unique
+      - name: region_key
+        description: "Surrogate key for region dimension"
+        tests:
+          - not_null
+          - unique
+  
+  - name: dim_date
+    description: "Date dimension table"
+    columns:
+      - name: date_key
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_ecom_sales
+    description: "Fact table for e-commerce sales"
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+      - name: customer_key
+        description: "Foreign key to dim_customer"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: product_key
+        description: "Foreign key to dim_product"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: region_key
+        description: "Foreign key to dim_region"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_region')
+                field: region_key
+      - name: order_date_key
+        description: "Foreign key to dim_date"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+
+  
+

@@ -1,0 +1,8 @@
+dbt_model:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/mnt/d/ecommerce-data-modeling/duckdb_warehouse/warehouse.duckdb') }}"
+      schema: main 
+      threads: 4
