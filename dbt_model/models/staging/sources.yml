@@ -10,6 +10,10 @@ sources:
             tests: 
               - not_null
               - unique
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_sql_database_customer']
 
       - name: product
         description: "Product data from e-commerce dataset" 
@@ -18,6 +22,10 @@ sources:
             tests:
               - not_null
               - unique
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_sql_database_product']
 
       - name: region 
         description: "Region data from e-commerce dataset"
@@ -26,6 +34,10 @@ sources:
             tests:
               - not_null
               - unique
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_sql_database_region']
 
       - name: ecom_sales
         description: "Sales data from e-commerce dataset"
@@ -34,3 +46,7 @@ sources:
             tests:
               - not_null
               - unique
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_sql_database_ecom_sales']

@@ -1,0 +1,56 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+.aws/
+secrets.toml
+*.secrets.toml
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# dbt generated files and local settings
+dbt_packages/
+dbt_internal_packages/
+target/
+.user.yml
+
+# dlt pipeline state and local data
+.dlt/state/
+.dlt/data/
+.dlt/profile-name
+
+# Dagster local runtime storage
+.dagster/
+.tmp_dagster_home*/
+
+# Local databases and runtime logs
+*.duckdb
+*.duckdb.wal
+*.duckdb.tmp/
+*.wal
+logs/
+*.log
+
+# Editor and operating system files
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
