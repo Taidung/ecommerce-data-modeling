@@ -17,6 +17,12 @@ models:
       +meta:
         dagster:
           group: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+      +meta:
+        dagster:
+          group: intermediate
     warehouse:
       +materialized: table
       +schema: warehouse

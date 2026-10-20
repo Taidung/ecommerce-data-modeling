@@ -1,6 +1,6 @@
 with source as (
     select *
-    from {{ ref("stg_product") }}
+    from {{ ref("int_product") }}
 )
 
 select 

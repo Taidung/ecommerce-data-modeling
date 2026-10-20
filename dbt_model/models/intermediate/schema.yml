@@ -1,0 +1,15 @@
+models:
+  - name: int_product
+    description: Product records enriched with placeholder records for missing sales codes.
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+  - name: int_region
+    description: Region records enriched with placeholder records for missing sales codes.
+    columns:
+      - name: region_id
+        tests:
+          - not_null
+          - unique
