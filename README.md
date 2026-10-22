@@ -82,6 +82,8 @@ The arrows represent **data flow**: SQL Server → dlt → DuckDB → Power BI. 
 
 **dbt Core is shown inside the analytical database box to indicate that transformation happens in DuckDB.** Its process runs externally and submits SQL for DuckDB to execute. dlt and dbt point to the same persistent DuckDB file, and Power BI imports the resulting analytical data through ODBC.
 
+![Project architecture](images/architecture.png)
+
 ### 2.2. Ingestion — dlt
 
 **dlt is selected for its Python flexibility, reusable connectors, and control over extraction and loading.**
@@ -174,3 +176,70 @@ Declaring an asset dependency alone does not automatically launch new runs. Conf
 
 Use Import for this DuckDB ODBC setup. Refresh Power BI after the dlt and dbt jobs complete. For a published Power BI Service report, a gateway with the DuckDB ODBC driver and access to the database file is needed for scheduled refresh; API refresh also requires appropriate authentication and permissions.
 
+## 3. Directory structure
+
+```text
+ecommerce-data-modeling/
+├── README.md
+├── requirements.txt                 # Python dependencies
+├── ingestion/
+│   └── load_data.py                  # SQL Server to DuckDB ingestion with dlt
+├── dbt_model/
+│   ├── dbt_project.yml               # dbt project configuration
+│   ├── profiles.yml                  # Connection profiles
+│   ├── packages.yml                  # Package dependencies
+│   └── models/
+│       ├── staging/                  # Source staging models
+│       ├── intermediate/             # Intermediate transformations
+│       ├── warehouse/                # Dimension and fact models
+│       └── marts/                    # 15 ad hoc models
+├── orchestration/
+│   ├── definitions.py                # Dagster definitions
+│   ├── defs/
+│   │   ├── dlt/                      # Ingestion assets and resources
+│   │   └── dbt/                      # Transformation assets and resources
+│   ├── jobs/                         # Pipeline jobs
+│   ├── schedules/                    # Scheduled execution
+│   └── sensors/                      # Event-driven execution
+├── duckdb_warehouse/                 # Local analytical database
+├── report/
+│   └── report.pbix                   # Power BI report
+├── images/                          # Architecture, DAG, and dashboards
+└── logs/                            # Runtime logs
+```
+
+## 4. Pipeline DAG
+
+### 4.1. Asset dependency graph
+
+![Dagster asset dependency graph](images/dagster_dag.svg)
+
+### 4.2. Successful pipeline execution
+
+![Successful Dagster pipeline run](images/dag_success.svg)
+
+## 5. Dashboards
+
+### 5.1. Overview
+
+![Overview dashboard](images/overview.png)
+
+### 5.2. Markets
+
+![Markets dashboard](images/markets.png)
+
+### 5.3. Segments
+
+![Segments dashboard](images/segments.png)
+
+### 5.4. Products
+
+![Products dashboard](images/Products.png)
+
+### 5.5. Customers
+
+![Customers dashboard](images/Customers.png)
+
+### 5.6. Discount & Product Pairs
+
+![Discount & Product Pairs dashboard](images/Discount%20%26%20Product%20Pairs.png)
