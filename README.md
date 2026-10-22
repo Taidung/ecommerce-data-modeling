@@ -2,7 +2,7 @@
 
 ## 1. What is a modern data stack, and what are its components?
 
-A **modern data stack (MDS)** is a collection of integrated, cloud-based tools and technologies that support data collection, ingestion, storage, cleaning, transformation, analysis, and governance.
+A **modern data stack (MDS)** is a collection of integrated tools and technologies that support data collection, ingestion, storage, cleaning, transformation, analysis, and governance. These tools can run in the cloud or locally, as in this DuckDB-based project.
 
 ### 1.1. Data storage
 
@@ -54,7 +54,7 @@ Some data platforms integrate ML and AI to support predictive modeling, automate
 
 ### 2.1. Architecture
 
-The project uses **SQL Server** as the source, **dlt** for ingestion, **Snowflake** as the warehouse, **dbt Core** for transformation, **Dagster** for orchestration, and **Power BI** for reporting.
+The project uses **SQL Server** as the source, **dlt** for ingestion, **DuckDB** as the analytical database, **dbt Core with the DuckDB adapter** for transformation, **Dagster** for orchestration, and **Power BI** for reporting.
 
 ```mermaid
 flowchart LR
@@ -66,7 +66,7 @@ flowchart LR
         subgraph INGESTION["Ingestion"]
             DLT["dlt"]
         end
-        subgraph WAREHOUSE["Warehouse — Snowflake"]
+        subgraph WAREHOUSE["Analytical Database — DuckDB"]
             DBT["Transformation — dbt Core"]
         end
         subgraph REPORTING["Reporting"]
@@ -78,21 +78,21 @@ flowchart LR
     SQL --> DLT
 ```
 
-The arrows represent **data flow**: SQL Server → dlt → Snowflake → Power BI. The outer Dagster box represents orchestration across ingestion, transformation, and reporting refresh.
+The arrows represent **data flow**: SQL Server → dlt → DuckDB → Power BI. The outer Dagster box represents orchestration across ingestion and transformation. Refreshing Power BI after the DuckDB models are updated is a separate step.
 
-**dbt Core is shown inside the warehouse box to indicate that transformation happens in Snowflake.** Its process runs externally and submits SQL for Snowflake to execute. Power BI reads the resulting analytical data from Snowflake.
+**dbt Core is shown inside the analytical database box to indicate that transformation happens in DuckDB.** Its process runs externally and submits SQL for DuckDB to execute. dlt and dbt point to the same persistent DuckDB file, and Power BI imports the resulting analytical data through ODBC.
 
 ### 2.2. Ingestion — dlt
 
 **dlt is selected for its Python flexibility, reusable connectors, and control over extraction and loading.**
 
-- **Prebuilt sources and destinations:** The `sql_database` source supports SQL Server, and the Snowflake destination provides a supported loading path.
+- **Prebuilt sources and destinations:** The `sql_database` source supports SQL Server, and the DuckDB destination loads data into a persistent local database file.
 - **Flexible extraction and loading:** Full extraction, cursor-based incremental loading, custom SQL, and `append`, `replace`, or `merge` write dispositions can be configured per resource.
 - **Schema management:** Schema inference, evolution, hints, and contracts help accommodate source data while controlling unexpected changes.
 - **Validation and inspection:** Pydantic or custom Python validation can enforce expectations; logs, traces, and load information expose ingestion results and failures.
 - **Lightweight orchestration integration:** Run Python ingestion alongside Dagster-managed workflows without operating a separate ingestion platform.
 - **Privacy and extensibility:** Remove or pseudonymize sensitive fields before loading and implement additional sources in Python.
-- **Open-source library:** No library licensing fee; infrastructure, Snowflake usage, and maintenance still contribute to cost.
+- **Open-source library:** No library licensing fee; compute, storage, backups, and maintenance still contribute to cost.
 
 | Tool | Main characteristics and features |
 | --- | --- |
@@ -102,23 +102,23 @@ The arrows represent **data flow**: SQL Server → dlt → Snowflake → Power B
 
 **Important boundary:** Cursor-based incremental extraction is not equivalent to log-based CDC. The standard dlt SQL source does not automatically capture every intermediate update or detect hard-deleted source rows. Duplicate prevention requires suitable keys and write settings.
 
-### 2.3. Warehouse — Snowflake
+### 2.3. Analytical database — DuckDB
 
-**Snowflake is selected for managed analytical storage, flexible compute, and compatibility with the chosen stack.**
+**DuckDB is selected for file-based analytical storage, local SQL execution, and compatibility with the chosen stack.**
 
-- **Managed infrastructure:** Provides cloud storage and analytical query execution without maintaining database servers directly.
-- **Independent compute and storage:** Virtual warehouses can be sized and operated independently of stored data. Separate warehouses can isolate transformation and reporting compute when required.
-- **Compute controls:** Warehouse sizing, auto-suspend, and auto-resume help match compute usage to the workload.
-- **Access and recovery:** Role-based access controls and retention-dependent Time Travel support controlled access and recovery from certain data changes.
-- **Stack compatibility:** Supported by the dlt Snowflake destination, the dbt Snowflake adapter, and the native Power BI connector.
+- **Embedded infrastructure:** Runs within the application process and persists analytical tables in a local DuckDB database file. No separate database server is needed.
+- **Local compute and storage:** Query performance depends on the host machine, while the database file requires sufficient disk space and backups.
+- **Compute controls:** Configure resource use for the host and schedule data loading and transformation jobs to avoid overlapping writes.
+- **Access and recovery:** Protect the database file with operating-system permissions and backups; DuckDB does not provide Snowflake-style roles or Time Travel for this project.
+- **Stack compatibility:** Supported by the dlt DuckDB destination, the dbt DuckDB adapter, and the DuckDB ODBC driver for Power BI Import.
 
 | Tool | Main characteristics and features |
 | --- | --- |
+| **DuckDB** | Embedded analytical database suited to local development, file-based analysis, and applications. Core execution uses the resources of the machine or process hosting it. |
 | **Snowflake** | Managed cloud analytics platform with virtual warehouses, separated compute/storage, access controls, and Time Travel. Costs include compute and storage. |
 | **BigQuery** | Serverless cloud data warehouse with managed execution and Google Cloud integration. Compute can use on-demand or capacity-based pricing. |
-| **DuckDB** | Embedded analytical database suited to local development, file-based analysis, and applications. Core execution uses the resources of the machine or process hosting it. |
 
-Snowflake compute and storage costs should be monitored. Uniqueness in standard tables must be verified through ingestion rules and data tests.
+DuckDB file size, host resources, and backups should be monitored. In the standard file-backed setup, dlt and dbt should write to the same database sequentially; Power BI refresh should run after both finish. Uniqueness in analytical tables must be verified through ingestion rules and data tests.
 
 ### 2.4. Transformation — dbt Core
 
@@ -134,9 +134,9 @@ Snowflake compute and storage costs should be monitored. Uniqueness in standard 
 | --- | --- |
 | **dbt Core** | SQL models, macros/packages, materializations, tests, documentation, and lineage. Scheduling and operational recovery are handled through the surrounding workflow. |
 | **SQLMesh** | SQL transformation framework with change planning, processed-interval tracking, targeted backfills, and virtual environments. Requires persistent state management. |
-| **Dataform** | SQLX workflows, assertions, documentation, Git integration, and managed execution for BigQuery. It does not meet this project's Snowflake requirement. |
+| **Dataform** | SQLX workflows, assertions, documentation, Git integration, and managed execution for BigQuery. It does not meet this project's DuckDB requirement. |
 
-Keep shared business definitions in documented warehouse models where practical. Use Power BI measures for report-specific calculations without independently redefining the same KPI in multiple places.
+Keep shared business definitions in documented DuckDB models where practical. Use Power BI measures for report-specific calculations without independently redefining the same KPI in multiple places.
 
 ### 2.5. Orchestration — Dagster
 
@@ -154,7 +154,7 @@ Keep shared business definitions in documented warehouse models where practical.
 | **Airflow** | Python DAGs built around tasks, operators, and sensors, with scheduling, retries, and backfills. Also supports asset-aware scheduling. |
 | **Kestra** | Declarative YAML flows and visual editing, with plugins, schedule/event triggers, parallel execution, retries, and concurrency controls. |
 
-Declaring an asset dependency alone does not automatically launch new runs. Configure schedules, sensors, or declarative automation and enable the required processes. Dagster OSS must be operated on suitable infrastructure; managed Dagster+ features and pricing should be evaluated separately.
+Declaring an asset dependency alone does not automatically launch new runs. Configure schedules, sensors, or declarative automation and enable the required processes. Coordinate dlt and dbt so their write processes do not overlap on the same DuckDB file. Dagster OSS must be operated on suitable infrastructure; managed Dagster+ features and pricing should be evaluated separately.
 
 ### 2.6. Reporting — Power BI
 
@@ -162,7 +162,7 @@ Declaring an asset dependency alone does not automatically launch new runs. Conf
 
 - **Data modeling and DAX:** Define relationships and reusable measures for revenue, profit margin, and customer analysis.
 - **Interactive reporting:** Filters, slicers, and drill-downs support analysis by market, segment, and product.
-- **Snowflake connectivity:** The native connector supports Import and DirectQuery.
+- **DuckDB connectivity:** Use the DuckDB ODBC driver to import analytical data into Power BI Desktop. A published report needs a reachable database file and a configured gateway for refresh.
 - **Distribution and access:** Power BI Service supports sharing, scheduled refresh, and row-level security, subject to configuration and licensing.
 - **Free development:** Power BI Desktop is free. Private sharing generally requires paid licenses or qualifying capacity.
 
@@ -172,5 +172,5 @@ Declaring an asset dependency alone does not automatically launch new runs. Conf
 | **Tableau** | Flexible visual exploration, drag-and-drop analysis, and customizable interactive dashboards. Suited to visual analytics and presentation. |
 | **Data Studio** | Browser-based reporting with sharing and connections to Google Sheets, Google Analytics, and BigQuery. Offers a no-cost version and optional Pro features. |
 
-Select Import or DirectQuery based on freshness, report performance, dataset size, and Snowflake query costs. The API refresh step applies to published Power BI Service content and requires appropriate authentication and permissions.
+Use Import for this DuckDB ODBC setup. Refresh Power BI after the dlt and dbt jobs complete. For a published Power BI Service report, a gateway with the DuckDB ODBC driver and access to the database file is needed for scheduled refresh; API refresh also requires appropriate authentication and permissions.
 
