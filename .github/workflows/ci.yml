@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+
+    steps:
+      - name: Set temporary DuckDB path
+        run: echo "DUCKDB_PATH=${RUNNER_TEMP}/ecommerce-ci.duckdb" >> "$GITHUB_ENV"
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check Python syntax
+        run: python -m compileall -q ingestion orchestration
+
+      - name: Install dbt packages
+        run: dbt deps --project-dir dbt_model --profiles-dir dbt_model
+
+      - name: Parse dbt project
+        run: dbt parse --project-dir dbt_model --profiles-dir dbt_model --no-partial-parse
+
+      - name: Create test data
+        run: python .github/scripts/seed_ci_duckdb.py
+
+      - name: Build and test dbt models
+        run: dbt build --project-dir dbt_model --profiles-dir dbt_model
+
+      - name: Validate Dagster definitions
+        run: |
+          python -c 'from dagster import Definitions; from orchestration.definitions import defs; Definitions.validate_loadable(defs)'
