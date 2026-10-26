@@ -35,7 +35,7 @@ select
     s.discount,
     s.profit
 from sales s
-inner join customer c on s.customer_id = c.customer_id
-inner join product p on s.product_id = p.product_id
-inner join region r on s.region_id = r.region_id
-inner join date d on s.order_date = d.full_date
+left join customer c on s.customer_id = c.customer_id
+left join product p on s.product_id = p.product_id
+left join region r on s.region_id = r.region_id
+left join date d on s.order_date = d.full_date
