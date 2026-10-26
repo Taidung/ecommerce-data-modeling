@@ -182,6 +182,9 @@ Use Import for this DuckDB ODBC setup. Refresh Power BI after the dlt and dbt jo
 ecommerce-data-modeling/
 ├── README.md
 ├── requirements.txt                 # Python dependencies
+├── .github/
+│   ├── workflows/ci.yml              # GitHub Actions CI workflow
+│   └── scripts/seed_ci_duckdb.py      # Small raw dataset for CI
 ├── ingestion/
 │   └── load_data.py                  # SQL Server to DuckDB ingestion with dlt
 ├── dbt_model/
@@ -243,3 +246,11 @@ ecommerce-data-modeling/
 ### 5.6. Discount & Product Pairs
 
 ![Discount & Product Pairs dashboard](images/Discount%20%26%20Product%20Pairs.png)
+
+## 6. CI/CD
+
+GitHub Actions runs [the CI workflow](.github/workflows/ci.yml) on every push and pull request. It installs the pinned Python dependencies, checks Python syntax, installs dbt packages, and parses the dbt project. It then creates a temporary DuckDB database with a small synthetic `raw` dataset, runs `dbt build` to execute the models and their data tests, and validates the Dagster definitions.
+
+The CI database is isolated from the local warehouse. The Dagster validation step uses a dummy SQL Server connection string because dlt resolves source credentials when the assets are imported; that step does not connect to SQL Server. CI does not ingest production data or refresh the Power BI report. Check the **Actions** tab on GitHub for the result of each run.
+
+There is currently no CD workflow: code and configuration are not automatically deployed to a running environment. Dagster's monthly ingestion schedule controls data processing, while deployment would require a separate target environment and release process.
