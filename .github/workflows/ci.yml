@@ -37,7 +37,7 @@ jobs:
         run: dbt deps --project-dir dbt_model --profiles-dir dbt_model
 
       - name: Parse dbt project
-        run: dbt parse --project-dir dbt_model --profiles-dir dbt_model --no-partial-parse
+        run: dbt parse --project-dir dbt_model --profiles-dir dbt_model
 
       - name: Create test data
         run: python .github/scripts/seed_ci_duckdb.py
@@ -46,5 +46,8 @@ jobs:
         run: dbt build --project-dir dbt_model --profiles-dir dbt_model
 
       - name: Validate Dagster definitions
+        env:
+          # dlt resolves source credentials when assets are imported; validation does not connect.
+          SOURCES__SQL_DATABASE__CREDENTIALS: mssql+pymssql://ci:ci@localhost/ci
         run: |
           python -c 'from dagster import Definitions; from orchestration.definitions import defs; Definitions.validate_loadable(defs)'
